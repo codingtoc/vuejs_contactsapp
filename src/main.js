@@ -3,6 +3,7 @@
 import Vue from "vue";
 import App from "./App";
 import axios from "axios"; // 추가
+require("es6-promise").polyfill(); // 추가
 
 Vue.prototype.$axios = axios; // 추가
 Vue.config.productionTip = false;
