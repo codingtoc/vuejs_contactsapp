@@ -1,12 +1,13 @@
 <template>
-  <div>
-    UpdateContact.vue
-  </div>
+  <contact-form mode="update" :contact="contact" />
 </template>
 
 <script>
-export default {};
-</script>
+import ContactForm from "./ContactForm";
 
-<style scoped>
-</style>
+export default {
+  name: "updateContact",
+  components: { ContactForm },
+  props: ["contact"]
+};
+</script>
