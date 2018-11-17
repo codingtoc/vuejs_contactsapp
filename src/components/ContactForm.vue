@@ -4,19 +4,19 @@
       <h3 class="heading">:: {{headingText}}</h3>
       <div v-if="mode==='update'" class="form-group">
         <label>일련번호</label>
-        <input type="text" name="no" class="long" disabled v-model="contact.no">
+        <input type="text" name="no" class="long" disabled v-model="contactlocal.no">
       </div>
       <div class="form-group">
         <label>이름</label>
-        <input type="text" name="name" class="long" v-model="contact.name" ref="name" placeholder="이름을 입력하세요">
+        <input type="text" name="name" class="long" v-model="contactlocal.name" ref="name" placeholder="이름을 입력하세요">
       </div>
       <div class="form-group">
         <label>전화</label>
-        <input type="text" name="tel" class="long" v-model="contact.tel" placeholder="전화번호를 입력하세요">
+        <input type="text" name="tel" class="long" v-model="contactlocal.tel" placeholder="전화번호를 입력하세요">
       </div>
       <div class="form-group">
         <label>주소</label>
-        <input type="text" name="address" class="long" v-model="contact.address" placeholder="주소를 입력하세요">
+        <input type="text" name="address" class="long" v-model="contactlocal.address" placeholder="주소를 입력하세요">
       </div>
       <div class="form-group">
         <div>&nbsp;</div>
@@ -28,24 +28,18 @@
 </template>
 
 <script>
-import eventBus from "../EventBus.js";
+import Constant from "../constant.js";
+import { mapState } from "vuex";
 
 export default {
   name: "contactForm",
-  props: {
-    mode: { type: String, default: "add" },
-    contact: {
-      type: Object,
-      default() {
-        return {
-          no: "",
-          name: "",
-          tel: "",
-          address: "",
-          photo: ""
-        };
-      }
-    }
+  data() {
+    return {
+      contactlocal: {}
+    };
+  },
+  created() {
+    this.contactlocal = Object.assign({}, this.contact);
   },
   mounted() {
     this.$refs.name.focus();
@@ -58,18 +52,23 @@ export default {
     headingText() {
       if (this.mode !== "update") return "새로운 연락처 추가";
       else return "연락처 변경";
-    }
+    },
+    ...mapState(["mode", "contact"])
   },
   methods: {
     submitEvent() {
       if (this.mode === "update") {
-        eventBus.$emit("updateSubmit", contact);
+        this.$store.dispatch(Constant.UPDATE_CONTACT, {
+          contact: this.contactlocal
+        });
       } else {
-        eventBus.$emit("addSubmit", contact);
+        this.$store.dispatch(Constant.ADD_CONTACT, {
+          contact: this.contactlocal
+        });
       }
     },
     cancelEvent() {
-      eventBus.$emit("cancel");
+      this.$store.dispatch(Constant.CANCEL_FORM);
     }
   }
 };
