@@ -25,21 +25,25 @@
 </template>
 
 <script>
-import eventBus from "../EventBus.js";
+import Constant from "../constant.js";
+import { mapState } from "vuex";
 
 export default {
   name: "updatePhoto",
-  props: ["contact"],
+  computed: mapState(["contact"]),
   mounted: function() {
     this.$refs.photofile.focus();
   },
   methods: {
     cancelEvent() {
-      eventBus.$emit("cancel");
+      this.$store.dispatch(Constant.CANCEL_FORM);
     },
     photoSubmit() {
       var file = this.$refs.photofile.files[0];
-      eventBus.$emit("updatePhoto", this.contact.no, file);
+      this.$store.dispatch(Constant.UPDATE_PHOTO, {
+        no: this.contact.no,
+        file: file
+      });
     }
   }
 };
