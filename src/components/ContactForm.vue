@@ -4,19 +4,19 @@
       <h3 class="heading">:: {{headingText}}</h3>
       <div v-if="mode==='update'" class="form-group">
         <label>일련번호</label>
-        <input type="text" name="no" class="long" disabled v-model="contactlocal.no">
+        <input type="text" name="no" class="long" disabled :value="contact.no" @change="changeValue">
       </div>
       <div class="form-group">
         <label>이름</label>
-        <input type="text" name="name" class="long" v-model="contactlocal.name" ref="name" placeholder="이름을 입력하세요">
+        <input type="text" name="name" class="long" :value="contact.name" @change="changeValue" ref="name" placeholder="이름을 입력하세요">
       </div>
       <div class="form-group">
         <label>전화</label>
-        <input type="text" name="tel" class="long" v-model="contactlocal.tel" placeholder="전화번호를 입력하세요">
+        <input type="text" name="tel" class="long" :value="contact.tel" @change="changeValue" placeholder="전화번호를 입력하세요">
       </div>
       <div class="form-group">
         <label>주소</label>
-        <input type="text" name="address" class="long" v-model="contactlocal.address" placeholder="주소를 입력하세요">
+        <input type="text" name="address" class="long" :value="contact.address" @change="changeValue" placeholder="주소를 입력하세요">
       </div>
       <div class="form-group">
         <div>&nbsp;</div>
@@ -35,14 +35,21 @@ export default {
   name: "contactForm",
   data() {
     return {
-      contactlocal: {}
+      mode: "add",
+      contactlocal: { no: 0, name: "", tel: "", address: "", photo: "" }
     };
   },
-  created() {
-    this.contactlocal = Object.assign({}, this.contact);
-  },
+  props: ["no"],
   mounted() {
     this.$refs.name.focus();
+    var cr = this.$router.currentRoute;
+    if (cr.fullPath.indexOf("/add") > -1) {
+      this.mode = "add";
+      this.$store.dispatch(Constant.INITIALIZE_CONTACT_ONE);
+    } else {
+      this.mode = "update";
+      this.$store.dispatch(Constant.FETCH_CONTACT_ONE, { no: this.no });
+    }
   },
   computed: {
     btnText() {
@@ -53,22 +60,40 @@ export default {
       if (this.mode !== "update") return "새로운 연락처 추가";
       else return "연락처 변경";
     },
-    ...mapState(["mode", "contact"])
+    ...mapState(["contact", "contactlist"])
   },
   methods: {
     submitEvent() {
       if (this.mode === "update") {
         this.$store.dispatch(Constant.UPDATE_CONTACT, {
-          contact: this.contactlocal
+          contact: this.contact
+        });
+        this.$router.push({
+          name: "contacts",
+          query: { page: this.contactlist.pageno }
         });
       } else {
         this.$store.dispatch(Constant.ADD_CONTACT, {
-          contact: this.contactlocal
+          contact: this.contact
+        });
+        this.$router.push({
+          name: "contacts",
+          query: { page: 1 }
         });
       }
     },
     cancelEvent() {
-      this.$store.dispatch(Constant.CANCEL_FORM);
+      this.$router.push({
+        name: "contacts",
+        query: { page: this.contactlist.pageno }
+      });
+    },
+    changeValue(e) {
+      this.contactlocal = Object.assign({}, this.contact);
+      this.contactlocal[e.target.name] = e.target.value;
+      this.$store.commit(Constant.FETCH_CONTACT_ONE, {
+        contact: this.contactlocal
+      });
     }
   }
 };
